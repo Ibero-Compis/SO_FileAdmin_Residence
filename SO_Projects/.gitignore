@@ -1,0 +1,61 @@
+# Ignore .idea folder (JetBrains Rider project files)
+.idea/
+
+# Ignore build output directories
+bin/
+obj/
+
+# Ignore user-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Ignore Rider specific files
+.idea/
+.idea_modules/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/libraries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/.rider/
+
+# Ignore Rider logs
+.idea/.rider/logs/
+
+# Ignore compiled files
+*.dll
+*.exe
+*.so
+*.dylib
+*.class
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore Rider caches
+.idea/.rider/caches/
+
+# Ignore Rider index
+.idea/.rider/index/
+
+# Ignore Rider workspace
+.idea/.rider/workspace/
+
+# Ignore Rider tasks
+.idea/.rider/tasks/
+
+# Ignore Rider dictionaries
+.idea/.rider/dictionaries/
+
+# Ignore Rider libraries
+.idea/.rider/libraries/
+
+# Ignore Rider vcs
+.idea/.rider/vcs.xml
+
+# Ignore Rider jsLibraryMappings
+.idea/.rider/jsLibraryMappings.xml
