@@ -5,7 +5,7 @@ namespace Lab4_FileManagement;
 public class Permiso
 {
     private static int ultimoPermisoId = 0;
-    private int permisoId { get; set; }
+    public int permisoId { get; set; }
     private DateTime fechaInicio { get; set; }
     private DateTime fechaFin { get; set; }
     private Casa casa { get; set; }
