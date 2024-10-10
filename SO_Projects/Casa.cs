@@ -1,57 +1,41 @@
-﻿namespace Lab4_FileManagement;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Lab4_FileManagement.utils;
+
+namespace Lab4_FileManagement;
 
 public class Casa
 {
     // Atributos
     public int CasaId { get; set; }
     public int NumeroCasa { get; set; }
-    public string Direccional { get; set; }
-    public List<Usuario> Habitantes { get; set; }
+    public string Direccion { get; set; }
+    public ICollection<Usuario> Habitantes { get; set; }
+    public static string rutaArchivo = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db_data", "casas", "casas.txt");
 
     // Constructor
-    public Casa(int casaId, int numeroCasa, string direccional)
+    public Casa(int casaId, int numeroCasa, string direccion)
     {
         CasaId = casaId;
         NumeroCasa = numeroCasa;
-        Direccional = direccional;
+        Direccion = direccion;
         Habitantes = new List<Usuario>(); // Inicializamos la lista de habitantes vacía
     }
-
-    // Método para agregar un habitante
-    public void AgregarHabitante(Usuario usuario)
-    {
-        Habitantes.Add(usuario);
-        // TODO: Guardar la información de la casa en el archivo
-    }
-
-    // Método para eliminar un habitante
-    public void EliminarHabitante(Usuario usuario)
-    {
-        Habitantes.Remove(usuario);
-        // TODO: Guardar la información de la casa en el archivo
-    }
-
-    // Método para mostrar información de la casa
-    public void MostrarInfoCasa()
-    {
-        Console.WriteLine($"Casa ID: {CasaId}, Numero: {NumeroCasa}, Dirección: {Direccional}");
-        Console.WriteLine("Habitantes:");
-        foreach (var habitante in Habitantes)
-        {
-            Console.WriteLine($"- {habitante.Nombre}, Correo: {habitante.Email}");
-        }
-    }
-
+    
+    /*
     // Obtener la ruta completa
     public static string ObtenerRutaArchivo()
     {
         return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db_data", "casas", "casas.txt");
     }
+    */
 
     // Verificar si existe el archivo principal de la clase
     public bool VerificarRutaArchivo()
     {
-        return File.Exists(ObtenerRutaArchivo());
+        return File.Exists(rutaArchivo);
     }
 
     // Crear el archivo si no existe
@@ -59,7 +43,7 @@ public class Casa
     {
         if (!VerificarRutaArchivo())
         {
-            using (File.Create(ObtenerRutaArchivo()))
+            using (File.Create(rutaArchivo))
             {
                 Console.WriteLine("Archivo de casas creado exitosamente.");
             }
@@ -69,97 +53,207 @@ public class Casa
 
         Console.WriteLine("El archivo de casas ya existe.");
     }
-
-    // Método que permita guardar la información de la casa en el archivo
-    public void GuardarInfoCasa()
+    
+    
+    public void AgregarCasa(Casa casa)
     {
-        CrearArchivoPrincipal();
-        using (StreamWriter sw = new StreamWriter(ObtenerRutaArchivo(), true))
+        int casaId = casa.CasaId;
+        int numeroCasa = casa.NumeroCasa;
+        string direccional = casa.Direccion;
+        string habitantesIds = string.Join(",", casa.Habitantes.Select(h => h.UsuarioId));
+        
+        try
         {
-            sw.WriteLine($"Casa ID: {CasaId}, Numero: {NumeroCasa}, Dirección: {Direccional}");
-            sw.WriteLine("Habitantes:");
-            foreach (var habitante in Habitantes)
-            {
-                sw.WriteLine($"- {habitante.Nombre}, Correo: {habitante.Email}");
-            }
+            string filePath = rutaArchivo;
 
-            sw.WriteLine(); // Añadir una línea en blanco para separar las casas
+            FileManipulation.VerifyFileLocation(filePath);
+
+            string casaInfo =
+                $"{casaId}\n{numeroCasa}\n{direccional}\n{habitantesIds}\n\n";
+            //1
+            //123
+            //Calle 123
+            //1,2,3
+            //
+            //2
+            //456
+            //Calle 456
+            //4,5,6
+            FileManipulation.AppendLineToFile(filePath, casaInfo);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error al agregar la casa:  " + e.Message);
+            throw;
         }
     }
-
-    public static Casa? ObtenerCasaPorId(int id)
+    
+    public static List<Casa> ObtenerCasas()
     {
-        string filePath = ObtenerRutaArchivo();
+        List<Casa> casas = new List<Casa>();
+        string filePath = rutaArchivo;
 
-        // Verificar si el archivo de casas existe
-        if (!File.Exists(filePath))
+        if (File.Exists(filePath))
         {
-            Console.WriteLine("El archivo de casas no existe.");
-            return null;
+            string[] casasData = File.ReadAllLines(filePath);
+            for (int i = 0; i < casasData.Length; i += 5) // Assuming each casa entry has 5 lines
+            {
+                int casaId = int.Parse(casasData[i]);
+                int numeroCasa = int.Parse(casasData[i + 1]);
+                string direccion = casasData[i + 2];
+                string[] habitantesIds = casasData[i + 3].Split(',');
+                List<Usuario> habitantes = new List<Usuario>();
+                foreach (string habitanteId in habitantesIds)
+                {
+                    Usuario habitante = Usuario.ObtenerUsuarioPorId(int.Parse(habitanteId));
+                    habitantes.Add(habitante);
+                }
+
+                Casa casa = new Casa(casaId, numeroCasa, direccion);
+                casa.Habitantes = habitantes;
+                casas.Add(casa);
+            }
         }
 
-        // Leer el archivo línea por línea
-        using (StreamReader sr = new StreamReader(filePath))
+        return casas;
+    }
+    
+    public static Casa? ObtenerCasaPorId(int casaId)
+    {
+        List<Casa> casas = ObtenerCasas();
+        return casas.FirstOrDefault(c => c.CasaId == casaId);
+    }
+    
+    public void MostrarCasas()
+    {
+        List<Casa> casas = ObtenerCasas();
+        foreach (Casa casa in casas)
         {
-            Casa? casaEncontrada = null;
-            List<Usuario> habitantes = new List<Usuario>();
-            string? linea;
-            bool casaCorrecta = false;
-
-            while ((linea = sr.ReadLine()) != null)
+            Console.WriteLine($"Casa ID: {casa.CasaId}");
+            Console.WriteLine($"Número de Casa: {casa.NumeroCasa}");
+            Console.WriteLine($"Dirección: {casa.Direccion}");
+            Console.WriteLine("Habitantes:");
+            foreach (Usuario habitante in casa.Habitantes)
             {
-                // Buscar la línea que contiene el CasaID
-                if (linea.StartsWith("Casa ID:"))
-                {
-                    // Extraer el CasaID de la línea
-                    int casaIdLeida = int.Parse(linea.Split(",")[0].Split(":")[1].Trim());
+                Console.WriteLine($"- {habitante.Nombre}");
+            }
 
-                    if (casaIdLeida == id)
+            Console.WriteLine();
+        }
+    }
+    
+    public void EliminarCasa(int casaId)
+    {
+        string filePath = rutaArchivo;
+
+        if (File.Exists(filePath))
+        {
+            string[] casasData = File.ReadAllLines(filePath);
+            List<string> updatedCasas = new List<string>();
+
+            for (int i = 0; i < casasData.Length; i += 5) // Assuming each casa entry has 5 lines
+            {
+                int currentCasaId = int.Parse(casasData[i]);
+                if (currentCasaId != casaId)
+                {
+                    for (int j = 0; j < 5; j++)
                     {
-                        casaCorrecta = true;
-                        // Obtener los demás datos
-                        string[] partes = linea.Split(",");
-                        int numeroCasa = int.Parse(partes[1].Split(":")[1].Trim());
-                        string direccion = partes[2].Split(":")[1].Trim();
-
-                        casaEncontrada = new Casa(casaIdLeida, numeroCasa, direccion);
+                        updatedCasas.Add(casasData[i + j]);
                     }
-                    else
-                    {
-                        casaCorrecta = false;
-                    }
-                }
-                // Si la casa correcta fue encontrada, empezar a agregar los habitantes
-                else if (casaCorrecta && linea.StartsWith("-"))
-                {
-                    // Extraer los datos del habitante
-                    string[] datosHabitante = linea.Split(",");
-                    string nombre = datosHabitante[0].Split("-")[1].Trim();
-                    string email = datosHabitante[1].Split(":")[1].Trim();
-
-                    // TODO: Revisar proceso de asignacion de ID
-                    Usuario habitante = new Usuario(0, nombre, email, 0, "");
-
-                    casaEncontrada?.AgregarHabitante(habitante);
-                }
-
-                // Si encontramos otra casa, salir del ciclo
-                if (casaCorrecta && linea == "")
-                {
-                    break;
                 }
             }
 
-            // Retornar la casa encontrada o null si no se encontró
-            if (casaEncontrada != null)
+            File.WriteAllLines(filePath, updatedCasas);
+            Console.WriteLine("Casa eliminada exitosamente.");
+        }
+        else
+        {
+            Console.WriteLine("No hay casas registradas.");
+        }
+    }
+    
+    public void AgregarHabitante(int casaId, int usuarioId)
+    {
+        Casa? casa = ObtenerCasaPorId(casaId);
+        if (casa != null)
+        {
+            Usuario? usuario = Usuario.ObtenerUsuarioPorId(usuarioId);
+            if (usuario != null)
             {
-                return casaEncontrada;
+                casa.Habitantes.Add(usuario);
+                EliminarCasa(casaId);
+                AgregarCasa(casa);
+                Console.WriteLine("Habitante agregado exitosamente.");
             }
             else
             {
-                Console.WriteLine($"No se encontró una casa con el ID: {id}");
-                return null;
+                Console.WriteLine("El usuario no existe.");
             }
         }
+        else
+        {
+            Console.WriteLine("La casa no existe.");
+        }
     }
+    
+    public void EliminarHabitante(int casaId, int usuarioId)
+    {
+        Casa? casa = ObtenerCasaPorId(casaId);
+        if (casa != null)
+        {
+            Usuario? usuario = Usuario.ObtenerUsuarioPorId(usuarioId);
+            if (usuario != null)
+            {
+                casa.Habitantes.Remove(usuario);
+                EliminarCasa(casaId);
+                AgregarCasa(casa);
+                Console.WriteLine("Habitante eliminado exitosamente.");
+            }
+            else
+            {
+                Console.WriteLine("El usuario no existe.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("La casa no existe.");
+        }
+    }
+    
+    public void MostrarHabitantes(int casaId)
+    {
+        Casa? casa = ObtenerCasaPorId(casaId);
+        if (casa != null)
+        {
+            Console.WriteLine($"Habitantes de la Casa {casa.NumeroCasa}:");
+            foreach (Usuario habitante in casa.Habitantes)
+            {
+                Console.WriteLine($"- {habitante.Nombre}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("La casa no existe.");
+        }
+    }
+    
+    
+    public void MostrarHabitantesDeTodasLasCasas()
+    {
+        List<Casa> casas = ObtenerCasas();
+        foreach (Casa casa in casas)
+        {
+            Console.WriteLine($"Habitantes de la Casa {casa.NumeroCasa}:");
+            foreach (Usuario habitante in casa.Habitantes)
+            {
+                Console.WriteLine($"- {habitante.Nombre}");
+            }
+
+            Console.WriteLine();
+        }
+    }
+    
+    
+    
+    
 }
