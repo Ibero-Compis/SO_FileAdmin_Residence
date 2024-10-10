@@ -1,0 +1,15 @@
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.AssemblyInfoInputs.cache
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.AssemblyInfo.cs
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.csproj.CoreCompileInputs.cache
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.sourcelink.json
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\bin\Debug\net8.0\Lab4_FileManagement.exe
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\bin\Debug\net8.0\Lab4_FileManagement.deps.json
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\bin\Debug\net8.0\Lab4_FileManagement.runtimeconfig.json
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\bin\Debug\net8.0\Lab4_FileManagement.dll
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\bin\Debug\net8.0\Lab4_FileManagement.pdb
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.dll
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\refint\Lab4_FileManagement.dll
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.pdb
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\Lab4_FileManagement.genruntimeconfig.cache
+C:\Users\fereg\Documents\ibero\SO\SO_FileAdmin_Residence\SO_Projects\obj\Debug\net8.0\ref\Lab4_FileManagement.dll
