@@ -8,13 +8,44 @@ public class Entrada
     public string terminal { get; set; }
     public int permisoId { get; set; }
     
-    public Entrada(int id, string comentario, DateTime fecha, string terminal, int permiso)
+    public Entrada(string comentario, DateTime fecha, string terminal, int permiso)
     {
-        this.id = id;
+        this.id = ObtenerUltimoId() + 1;;
         this.comentario = comentario;
         this.fecha = fecha;
         this.terminal = terminal;
         this.permisoId = permiso;
+    }
+    
+    // id autoincrementable
+    public int ObtenerUltimoId()
+    {
+        if (!File.Exists(Path.Combine(BaseDirectory, "entradas.txt")))
+        {
+            return 0; // No entries exist yet
+        }
+
+        int lastId = 0;
+        using (StreamReader sr = File.OpenText(Path.Combine(BaseDirectory, "entradas.txt")))
+        {
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    lastId = int.Parse(line);
+                }
+
+                // Skip the rest of the entry
+                sr.ReadLine(); // permisoId
+                sr.ReadLine(); // comentario
+                sr.ReadLine(); // fecha
+                sr.ReadLine(); // terminal
+                sr.ReadLine(); // empty line
+            }
+        }
+
+        return lastId;
     }
     
     // ARCHIVOS
@@ -34,21 +65,45 @@ public class Entrada
             Directory.CreateDirectory(BaseDirectory);
         }
         
-        // buscar si ya existe una entrada con el mismo id
-        if (File.Exists(Path.Combine(BaseDirectory, entrada.id.ToString() + ".txt")))
+        // validar si ya existe el archivo entradas.txt
+        if (!File.Exists(Path.Combine(BaseDirectory, "entradas.txt")))
         {
-            throw new Exception("Ya existe una entrada con el mismo id");
+            // crear el archivo entradas.txt
+            using (StreamWriter sw = File.CreateText(Path.Combine(BaseDirectory, "entradas.txt")))
+            {
+                // escribir la primera entrada
+                sw.WriteLine(entrada.id);
+                sw.WriteLine(entrada.comentario);
+                sw.WriteLine(entrada.fecha);
+                sw.WriteLine(entrada.terminal);
+                sw.WriteLine(entrada.permisoId);
+            }
+        }
+        else
+        {
+            // agregar la entrada al archivo entradas.txt
+            using (StreamWriter sw = File.AppendText(Path.Combine(BaseDirectory, "entradas.txt")))
+            {
+                // escribir una linea vacia para separar las entradas
+                sw.WriteLine();
+                // escribir la nueva entrada
+                sw.WriteLine(entrada.id);
+                sw.WriteLine(entrada.comentario);
+                sw.WriteLine(entrada.fecha);
+                sw.WriteLine(entrada.terminal);
+                sw.WriteLine(entrada.permisoId);
+            }
         }
         
         // crear el archivo con la informacion de la entrada
-        using (StreamWriter sw = File.AppendText(Path.Combine(BaseDirectory, entrada.id.ToString() + ".txt")))
-        {
-            sw.WriteLine(entrada.id);
-            sw.WriteLine(entrada.permisoId.ToString());
-            sw.WriteLine(entrada.comentario);
-            sw.WriteLine(entrada.fecha);
-            sw.WriteLine(entrada.terminal);
-        }
+        //using (StreamWriter sw = File.AppendText(Path.Combine(BaseDirectory, entrada.id.ToString() + ".txt")))
+        //{
+        //    sw.WriteLine(entrada.id);
+        //    sw.WriteLine(entrada.permisoId.ToString());
+        //    sw.WriteLine(entrada.comentario);
+        //    sw.WriteLine(entrada.fecha);
+        //    sw.WriteLine(entrada.terminal);
+        //}
     }
 
     // metodo para obtener una entrada utilizando archivos
@@ -57,21 +112,37 @@ public class Entrada
         // buscar la direccion de la carpeta
         if (!Directory.Exists(BaseDirectory))
         {
-            Directory.CreateDirectory(BaseDirectory);
+            // si no existe la carpeta, lanzar error
+            throw new Exception("No se ha encontrado la carpeta de entradas");
         }
         
-        // leer el archivo con la informacion de la entrada
-        using (StreamReader sr = File.OpenText(Path.Combine(BaseDirectory, id.ToString() + ".txt")))
+        // leer el archivo de entradas y buscar el bloque q contenga el id recibido
+        using (StreamReader sr = File.OpenText(Path.Combine(BaseDirectory, "entradas.txt")))
         {
             string line;
-            int idEntrada = int.Parse(sr.ReadLine());
-            int permisoId = int.Parse(sr.ReadLine()); // TODO: esto deberia tener un objeto de tipo permiso
-            string comentario = sr.ReadLine();
-            DateTime fecha = DateTime.Parse(sr.ReadLine());
-            string terminal = sr.ReadLine();
-            
-            return new Entrada(idEntrada, comentario, fecha, terminal, permisoId);
+            while ((line = sr.ReadLine()) != null) // primero lee el id
+            {
+                // leer las demas lineas para asegurarse de q en la proxima vuelta del while se lea el siguiente id
+                sr.ReadLine(); // permisoId
+                sr.ReadLine(); // comentario
+                sr.ReadLine(); // fecha
+                sr.ReadLine(); // terminal
+                sr.ReadLine(); // linea vacia
+                
+                if (line == id.ToString())
+                {
+                    int permisoId = int.Parse(sr.ReadLine()); // TODO: agregar permiso
+                    string comentario = sr.ReadLine();
+                    DateTime fecha = DateTime.Parse(sr.ReadLine());
+                    string terminal = sr.ReadLine();
+                    
+                    return new Entrada(comentario, fecha, terminal, permisoId);
+                }
+            }
         }
+        
+        // si no se encontro la entrada, lanzar error
+        throw new Exception("No se ha encontrado la entrada con el id: " + id);
     }
     
     // metodo para obtener todas las entradas utilizando archivos
@@ -80,23 +151,24 @@ public class Entrada
         // buscar la direccion de la carpeta
         if (!Directory.Exists(BaseDirectory))
         {
-            Directory.CreateDirectory(BaseDirectory);
+            // si no existe la carpeta, lanzar error
+            throw new Exception("No se ha encontrado la carpeta de entradas");
         }
         
-        // leer todos los archivos con la informacion de las entradas
+        // leer el archivo de entradas y guardar todas las entradas en una lista
         List<Entrada> entradas = new List<Entrada>();
-        foreach (string file in Directory.EnumerateFiles(BaseDirectory))
+        using (StreamReader sr = File.OpenText(Path.Combine(BaseDirectory, "entradas.txt")))
         {
-            using (StreamReader sr = File.OpenText(file))
+            string line;
+            while ((line = sr.ReadLine()) != null) // primero lee el id
             {
-                string line;
-                int idEntrada = int.Parse(sr.ReadLine());
+                int id = int.Parse(line);
                 int permisoId = int.Parse(sr.ReadLine()); // TODO: agregar permiso
                 string comentario = sr.ReadLine();
                 DateTime fecha = DateTime.Parse(sr.ReadLine());
                 string terminal = sr.ReadLine();
                 
-                entradas.Add(new Entrada(idEntrada, comentario, fecha, terminal, permisoId));
+                entradas.Add(new Entrada(comentario, fecha, terminal, permisoId));
             }
         }
         
@@ -109,11 +181,46 @@ public class Entrada
         // buscar la direccion de la carpeta
         if (!Directory.Exists(BaseDirectory))
         {
-            Directory.CreateDirectory(BaseDirectory);
+            // si no existe la carpeta, lanzar error
+            throw new Exception("No se ha encontrado la carpeta de entradas");
         }
         
-        // eliminar el archivo con la informacion de la entrada
-        File.Delete(Path.Combine(BaseDirectory, id.ToString() + ".txt"));
+        // leer el archivo de entradas y buscar el bloque q contenga el id recibido para eliminarlo
+        List<string> lines = new List<string>();
+        
+        using (StreamReader sr = File.OpenText(Path.Combine(BaseDirectory, "entradas.txt")))
+        {
+            string line;
+            while ((line = sr.ReadLine()) != null) // primero lee el id
+            {
+                if (line == id.ToString())
+                {
+                    sr.ReadLine(); // permisoId
+                    sr.ReadLine(); // comentario
+                    sr.ReadLine(); // fecha
+                    sr.ReadLine(); // terminal
+                    sr.ReadLine(); // linea vacia
+                }
+                else
+                {
+                    lines.Add(line);
+                    lines.Add(sr.ReadLine()); // permisoId
+                    lines.Add(sr.ReadLine()); // comentario
+                    lines.Add(sr.ReadLine()); // fecha
+                    lines.Add(sr.ReadLine()); // terminal
+                    lines.Add(sr.ReadLine()); // linea vacia
+                }
+            }
+        }
+        
+        // sobreescribir el archivo de entradas con las lineas restantes
+        using (StreamWriter sw = File.CreateText(Path.Combine(BaseDirectory, "entradas.txt")))
+        {
+            foreach (string line in lines)
+            {
+                sw.WriteLine(line);
+            }
+        }
     }
     
     // metodo para modificar una entrada utilizando archivos
@@ -122,17 +229,52 @@ public class Entrada
         // buscar la direccion de la carpeta
         if (!Directory.Exists(BaseDirectory))
         {
-            Directory.CreateDirectory(BaseDirectory);
+            // si no existe la carpeta, lanzar error
+            throw new Exception("No se ha encontrado la carpeta de entradas");
         }
         
-        // modificar el archivo con la informacion de la entrada
-        using (StreamWriter sw = File.CreateText(Path.Combine(BaseDirectory, entrada.id.ToString() + ".txt")))
+        // leer el archivo de entradas y buscar el bloque q contenga el id recibido para modificarlo
+        List<string> lines = new List<string>();
+        
+        using (StreamReader sr = File.OpenText(Path.Combine(BaseDirectory, "entradas.txt")))
         {
-            sw.WriteLine(entrada.id);
-            sw.WriteLine(entrada.permisoId.ToString() ); // TODO: agregar permiso
-            sw.WriteLine(entrada.comentario);
-            sw.WriteLine(entrada.fecha);
-            sw.WriteLine(entrada.terminal);
+            string line;
+            while ((line = sr.ReadLine()) != null) // primero lee el id
+            {
+                if (line == entrada.id.ToString())
+                {
+                    sr.ReadLine(); // permisoId
+                    sr.ReadLine(); // comentario
+                    sr.ReadLine(); // fecha
+                    sr.ReadLine(); // terminal
+                    sr.ReadLine(); // linea vacia
+                    
+                    lines.Add(entrada.id.ToString());
+                    lines.Add(entrada.permisoId.ToString());
+                    lines.Add(entrada.comentario);
+                    lines.Add(entrada.fecha.ToString());
+                    lines.Add(entrada.terminal);
+                    lines.Add(""); // linea vacia
+                }
+                else
+                {
+                    lines.Add(line);
+                    lines.Add(sr.ReadLine()); // permisoId
+                    lines.Add(sr.ReadLine()); // comentario
+                    lines.Add(sr.ReadLine()); // fecha
+                    lines.Add(sr.ReadLine()); // terminal
+                    lines.Add(sr.ReadLine()); // linea vacia
+                }
+            }
+        }
+        
+        // sobreescribir el archivo de entradas con las lineas restantes
+        using (StreamWriter sw = File.CreateText(Path.Combine(BaseDirectory, "entradas.txt")))
+        {
+            foreach (string line in lines)
+            {
+                sw.WriteLine(line);
+            }
         }
     }
 
