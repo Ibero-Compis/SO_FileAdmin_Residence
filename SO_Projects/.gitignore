@@ -59,3 +59,14 @@ Thumbs.db
 
 # Ignore Rider jsLibraryMappings
 .idea/.rider/jsLibraryMappings.xml
+
+# Ignore specific files causing conflicts
+SO_Projects/obj/Debug/net8.0/Lab4_FileManagement.GeneratedMSBuildEditorConfig.editorconfig
+SO_Projects/obj/Debug/net8.0/Lab4_FileManagement.assets.cache
+SO_Projects/obj/Lab4_FileManagement.csproj.nuget.dgspec.json
+SO_Projects/obj/Lab4_FileManagement.csproj.nuget.g.props
+SO_Projects/obj/project.assets.json
+SO_Projects/obj/project.nuget.cache
+SO_Projects/obj/project.packagespec.json
+SO_Projects/obj/rider.project.model.nuget.info
+SO_Projects/obj/rider.project.restore.info
