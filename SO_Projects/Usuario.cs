@@ -37,7 +37,8 @@ public class Usuario
     private static int GenerarNuevoId()
     {
         int nuevoId = 1;
-        if (File.Exists(RutaArchivo)){
+        if (File.Exists(RutaArchivo))
+        {
             string[] usersData = File.ReadAllLines(RutaArchivo);
             List<int> ids = new List<int>();
             for (int i = 0; i < usersData.Length; i += 5) // Assuming each casa entry has 5 lines
@@ -45,7 +46,8 @@ public class Usuario
                 ids.Add(int.Parse(usersData[i]));
             }
 
-            if (ids.Count > 0){
+            if (ids.Count > 0)
+            {
                 nuevoId = ids.Max() + 1;
             }
         }
@@ -65,7 +67,8 @@ public class Usuario
         Directory.CreateDirectory(userFolder);
 
         string userFilePath = Path.Combine(userFolder, $"{usuario.UsuarioId}_{usuario.Nombre}.txt");
-        using (StreamWriter sw = File.CreateText(userFilePath)){
+        using (StreamWriter sw = File.CreateText(userFilePath))
+        {
             sw.WriteLine($"UsuarioId: {usuario.UsuarioId}");
             sw.WriteLine($"Nombre: {usuario.Nombre}");
             sw.WriteLine($"Email: {usuario.Email}");
@@ -76,7 +79,8 @@ public class Usuario
 
     public void AgregarUsuario(Usuario usuario)
     {
-        try{
+        try
+        {
             // Verify if the file exists
             FileManipulation.VerifyFileLocation(Usuario.RutaArchivo);
 
@@ -91,12 +95,13 @@ public class Usuario
             // Create the user's folder and file
             CrearArchivoUsuario(usuario);
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             Console.WriteLine("Error al agregar el usuario: " + e.Message);
             throw;
         }
     }
-    
+
     public void MostrarUsuarios()
     {
         try
@@ -143,7 +148,8 @@ public class Usuario
 
     public void EliminarUsuario(int usuarioId)
     {
-        try{
+        try
+        {
             // Verify if the file exists
             FileManipulation.VerifyFileLocation(Usuario.RutaArchivo);
 
@@ -155,41 +161,49 @@ public class Usuario
             for (int i = 0; i < lines.Count; i += 5) // Assuming each user entry has 5 lines
             {
                 int currentUserId = int.Parse(lines[i]);
-                if (currentUserId != usuarioId){
-                    for (int j = 0; j < 5; j++){
+                if (currentUserId != usuarioId)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
                         updatedLines.Add(lines[i + j]);
                     }
                 }
-                else{
+                else
+                {
                     userFound = true;
                 }
             }
 
-            if (userFound){
+            if (userFound)
+            {
                 File.WriteAllLines(Usuario.RutaArchivo, updatedLines);
 
                 // Delete the user's folder
                 string userFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                     BuscarUsuarioPorId(usuarioId).Nombre);
-                if (Directory.Exists(userFolder)){
+                if (Directory.Exists(userFolder))
+                {
                     Directory.Delete(userFolder, true);
                 }
 
                 Console.WriteLine("Usuario eliminado exitosamente.");
             }
-            else{
+            else
+            {
                 Console.WriteLine("Usuario no encontrado.");
             }
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             Console.WriteLine("Error al eliminar el usuario: " + e.Message);
             throw;
         }
     }
-
+    
     public static Usuario? BuscarUsuarioPorId(int usuarioId)
     {
-        try{
+        try
+        {
             // Verify if the file exists
             FileManipulation.VerifyFileLocation(Usuario.RutaArchivo);
 
@@ -198,12 +212,12 @@ public class Usuario
 
             for (int i = 0; i < lines.Count; i += 5) // Assuming each user entry has 5 lines
             {
-                int currentUserId = int.Parse(lines[i]);
-                if (currentUserId == usuarioId){
+                if (int.TryParse(lines[i], out int currentUserId) && currentUserId == usuarioId)
+                {
                     string nombre = lines[i + 1];
                     string email = lines[i + 2];
                     int edad = int.Parse(lines[i + 3]);
-                    Role rol = new Role(int.Parse(lines[i + 4]), ""); // Assuming role name is not stored in the file
+                    Role rol = new Role(int.Parse(lines[i + 4]), ""); 
 
                     return new Usuario(currentUserId, nombre, email, edad, rol);
                 }
@@ -212,7 +226,8 @@ public class Usuario
             Console.WriteLine("Usuario no encontrado.");
             return null;
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             Console.WriteLine("Error al buscar el usuario: " + e.Message);
             throw;
         }
