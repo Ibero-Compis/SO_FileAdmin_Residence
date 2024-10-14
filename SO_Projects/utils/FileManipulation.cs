@@ -1,4 +1,6 @@
-﻿namespace Lab4_FileManagement.utils;
+﻿using System.IO;
+
+namespace Lab4_FileManagement.utils;
 
 public class FileManipulation
 {

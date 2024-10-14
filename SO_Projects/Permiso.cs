@@ -1,49 +1,82 @@
-﻿using Lab4_FileManagement.utils;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Lab4_FileManagement.utils;
 
 namespace Lab4_FileManagement;
 
 public class Permiso
 {
-    private static int ultimoPermisoId = 0;
-    public int permisoId { get; set; }
-    private DateTime fechaInicio { get; set; }
-    private DateTime fechaFin { get; set; }
-    private Casa casa { get; set; }
-    private Usuario usuario { get; set; }
+    public int PermisoId { get; set; }
+    private DateTime FechaInicio { get; set; }
+    private DateTime FechaFin { get; set; }
+    private Casa Casa { get; set; }
 
-    public Permiso()
+    private Usuario Usuario { get; set; }
+
+    // Para mantener la referencia de la tura de los permisos
+    public static string RutaArchivo =
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db_data", "permisos", "permisos.txt");
+
+    // Generar un nuevo ID único
+    private static int GenerarNuevoId()
     {
-        permisoId = ++ultimoPermisoId;
-        fechaInicio = DateTime.Now;
-        fechaFin = DateTime.Now;
-        
-        // TODO: Initialize Casa and Usuario. En teoria, no tendria por qué existir permiso sin referencia
-        // casa = new Casa();
-        // usuario = new Usuario();
+        int nuevoId = 1;
+        if (File.Exists(RutaArchivo)){
+            string[] casasData = File.ReadAllLines(RutaArchivo);
+            List<int> ids = new List<int>();
+            for (int i = 0; i < casasData.Length; i += 5) // Assuming each casa entry has 5 lines
+            {
+                ids.Add(int.Parse(casasData[i]));
+            }
+
+            if (ids.Count > 0){
+                nuevoId = ids.Max() + 1;
+            }
+        }
+
+        return nuevoId;
     }
 
-    public Permiso(DateTime fechaInicio, DateTime fechaFin, Casa casa, Usuario usuario)
+    // Verificar si existe el archivo principal de la clase
+    public bool VerificarRutaArchivo()
     {
-        this.permisoId = ++ultimoPermisoId;
-        this.fechaInicio = fechaInicio;
-        this.fechaFin = fechaFin;
-        this.casa = casa;
-        this.usuario = usuario;
+        return File.Exists(RutaArchivo);
     }
 
-    public void agregarPermiso(Permiso permiso)
+    public Permiso(DateTime FechaInicio, DateTime FechaFin, Casa Casa, Usuario Usuario)
     {
-        int CasaId = permiso.casa.CasaId; // Assuming Casa has a property Id
-        int UsuarioId = permiso.usuario.UsuarioId; // Assuming Usuario has a property Id
+        this.PermisoId = GenerarNuevoId();
+        this.FechaInicio = FechaInicio;
+        this.FechaFin = FechaFin;
+        this.Casa = Casa;
+        this.Usuario = Usuario;
+    }
 
-        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        string filePath = Path.Combine(baseDirectory, "permisos.txt");
+    /// <summary>
+    /// Adds a new permission to the file.
+    /// </summary>
+    /// <param name="permiso">The permission object to be added.</param>
+    public void AgregarPermiso(Permiso permiso)
+    {
+        // Obtener casa Id y Usuario Id
+        int CasaId = permiso.Casa.CasaId;
+        int UsuarioId = permiso.Usuario.UsuarioId;
 
-        FileManipulation.VerifyFileLocation(filePath);
+        try{
+            // Verificar si el archivo existe
+            FileManipulation.VerifyFileLocation(RutaArchivo);
 
-        string permisoInfo =
-            $"{permiso.permisoId}\n{permiso.fechaInicio}\n{permiso.fechaFin}\n{CasaId}\n{UsuarioId}\n\n";
-        FileManipulation.AppendLineToFile(filePath, permisoInfo);
+            // Parasear la informacion del permiso
+            string permisoInfo =
+                $"{permiso.PermisoId}\n{permiso.FechaInicio}\n{permiso.FechaFin}\n{CasaId}\n{UsuarioId}\n\n";
+            FileManipulation.AppendLineToFile(RutaArchivo, permisoInfo);
+        }
+        catch (Exception e){
+            Console.WriteLine("Error al agregar el permiso:  " + e.Message);
+            throw;
+        }
     }
 
     public void MostrarPermisos()
@@ -51,8 +84,7 @@ public class Permiso
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         string filePath = Path.Combine(baseDirectory, "permisos.txt");
 
-        if (File.Exists(filePath))
-        {
+        if (File.Exists(filePath)){
             string[] permisos = File.ReadAllLines(filePath);
             for (int i = 0; i < permisos.Length; i += 6) // Assuming each permission entry has 6 lines
             {
@@ -74,8 +106,7 @@ public class Permiso
                 Console.WriteLine();
             }
         }
-        else
-        {
+        else{
             Console.WriteLine("No hay permisos registrados.");
         }
     }
@@ -85,18 +116,15 @@ public class Permiso
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         string filePath = Path.Combine(baseDirectory, "permisos.txt");
 
-        if (File.Exists(filePath))
-        {
+        if (File.Exists(filePath)){
             string[] permisos = File.ReadAllLines(filePath);
             List<string> updatedPermisos = new List<string>();
 
             for (int i = 0; i < permisos.Length; i += 6) // Assuming each permission entry has 6 lines
             {
                 int currentPermisoId = int.Parse(permisos[i]);
-                if (currentPermisoId != permisoId)
-                {
-                    for (int j = 0; j < 6; j++)
-                    {
+                if (currentPermisoId != permisoId){
+                    for (int j = 0; j < 6; j++){
                         updatedPermisos.Add(permisos[i + j]);
                     }
                 }
@@ -105,8 +133,7 @@ public class Permiso
             File.WriteAllLines(filePath, updatedPermisos);
             Console.WriteLine($"Permiso con ID {permisoId} ha sido eliminado.");
         }
-        else
-        {
+        else{
             Console.WriteLine("No hay permisos registrados.");
         }
     }
