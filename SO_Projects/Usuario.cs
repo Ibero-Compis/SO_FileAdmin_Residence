@@ -41,9 +41,12 @@ public class Usuario
         {
             string[] usersData = File.ReadAllLines(RutaArchivo);
             List<int> ids = new List<int>();
-            for (int i = 0; i < usersData.Length; i += 5) // Assuming each casa entry has 5 lines
+            for (int i = 0; i < usersData.Length; i += 5) // Assuming each user entry has 5 lines
             {
-                ids.Add(int.Parse(usersData[i]));
+                if (!string.IsNullOrWhiteSpace(usersData[i])) // Check if the line is not empty
+                {
+                    ids.Add(int.Parse(usersData[i]));
+                }
             }
 
             if (ids.Count > 0)
@@ -67,76 +70,99 @@ public class Usuario
         Directory.CreateDirectory(userFolder);
 
         string userFilePath = Path.Combine(userFolder, $"{usuario.UsuarioId}_{usuario.Nombre}.txt");
-        using (StreamWriter sw = File.CreateText(userFilePath))
-        {
-            sw.WriteLine($"UsuarioId: {usuario.UsuarioId}");
-            sw.WriteLine($"Nombre: {usuario.Nombre}");
-            sw.WriteLine($"Email: {usuario.Email}");
-            sw.WriteLine($"Edad: {usuario.Edad}");
-            sw.WriteLine($"Rol: {usuario.Rol.RoleName}");
+        using (StreamWriter sw = File.CreateText(userFilePath)){
+            sw.WriteLine(usuario.UsuarioId);
+            sw.WriteLine(usuario.Nombre);
+            sw.WriteLine(usuario.Email);
+            sw.WriteLine(usuario.Edad);
+            sw.WriteLine(usuario.Rol.RoleName);
         }
     }
 
     public void AgregarUsuario(Usuario usuario)
     {
-        try
-        {
+        try{
             // Verify if the file exists
             FileManipulation.VerifyFileLocation(Usuario.RutaArchivo);
 
-            // Add the user's name to the file
-            File.AppendAllText(Usuario.RutaArchivo, usuario.Nombre + Environment.NewLine);
-
-            // Read all lines, sort them, and write them back
-            var lines = File.ReadAllLines(Usuario.RutaArchivo).ToList();
-            lines.Sort();
-            File.WriteAllLines(Usuario.RutaArchivo, lines);
+            // Add the user's ID and name to the file
+            using (StreamWriter sw = File.AppendText(Usuario.RutaArchivo)){
+                sw.WriteLine(usuario.UsuarioId);
+                sw.WriteLine(usuario.Nombre);
+                sw.WriteLine(); // Add an empty line to separate users
+            }
 
             // Create the user's folder and file
             CrearArchivoUsuario(usuario);
         }
-        catch (Exception e)
-        {
+        catch (Exception e){
             Console.WriteLine("Error al agregar el usuario: " + e.Message);
             throw;
         }
     }
 
-    public void MostrarUsuarios()
+    public static Usuario? BuscarUsuarioPorId(int usuarioId)
+    {
+        try{
+            // Verify if the file exists
+            if (!File.Exists(Usuario.RutaArchivo)){
+                Console.WriteLine("Archivo de usuarios no encontrado.");
+                return null;
+            }
+
+            // Read all lines and search for the user ID
+            var lines = File.ReadAllLines(Usuario.RutaArchivo).ToList();
+            for (int i = 0; i < lines.Count; i += 2) // Assuming each user entry has 2 lines (ID and Name)
+            {
+                if (int.TryParse(lines[i], out int currentUserId) && currentUserId == usuarioId){
+                    string nombre = lines[i + 1];
+                    return BuscarUsuarioPorNombre(nombre);
+                }
+            }
+
+            Console.WriteLine("Usuario no encontrado.");
+            return null;
+        }
+        catch (Exception e){
+            Console.WriteLine("Error al buscar el usuario: " + e.Message);
+            throw;
+        }
+    }
+
+    public void MostrarTodosLosUsuarios()
     {
         try
         {
             // Verify if the file exists
             if (!File.Exists(Usuario.RutaArchivo))
             {
-                Console.WriteLine("No hay usuarios registrados.");
+                Console.WriteLine("Archivo de usuarios no encontrado.");
                 return;
             }
 
-            // Read all lines from the file
+            // Read all lines and get user names
             var lines = File.ReadAllLines(Usuario.RutaArchivo).ToList();
 
+            // If the file is empty, return
             if (lines.Count == 0)
             {
                 Console.WriteLine("No hay usuarios registrados.");
                 return;
             }
 
-            // Display user information
-            for (int i = 0; i < lines.Count; i += 5) // Assuming each user entry has 5 lines
+            for (int i = 0; i < lines.Count; i += 3) // Assuming each user entry has 2 lines (ID and Name) + 1 empty line
             {
-                int usuarioId = int.Parse(lines[i]);
                 string nombre = lines[i + 1];
-                string email = lines[i + 2];
-                int edad = int.Parse(lines[i + 3]);
-                string rol = lines[i + 4];
-
-                Console.WriteLine($"ID del Usuario: {usuarioId}");
-                Console.WriteLine($"Nombre: {nombre}");
-                Console.WriteLine($"Email: {email}");
-                Console.WriteLine($"Edad: {edad}");
-                Console.WriteLine($"Rol: {rol}");
-                Console.WriteLine();
+                Usuario? usuario = BuscarUsuarioPorNombre(nombre);
+                if (usuario != null)
+                {
+                    Console.WriteLine($"ID del Usuario: {usuario.UsuarioId}");
+                    Console.WriteLine($"Nombre: {usuario.Nombre}");
+                    Console.WriteLine($"Email: {usuario.Email}");
+                    Console.WriteLine($"Edad: {usuario.Edad}");
+                    Console.WriteLine($"Rol: {usuario.Rol.RoleName}");
+                    Console.WriteLine();
+                }
             }
         }
         catch (Exception e)
@@ -157,20 +183,23 @@ public class Usuario
             var lines = File.ReadAllLines(Usuario.RutaArchivo).ToList();
             var updatedLines = new List<string>();
             bool userFound = false;
+            string userName = string.Empty;
 
-            for (int i = 0; i < lines.Count; i += 5) // Assuming each user entry has 5 lines
+            for (int i = 0; i < lines.Count; i += 3) // Assuming each user entry has 2 lines (ID and Name) + 1 empty line
             {
-                int currentUserId = int.Parse(lines[i]);
-                if (currentUserId != usuarioId)
+                if (!string.IsNullOrWhiteSpace(lines[i]) && int.TryParse(lines[i], out int currentUserId))
                 {
-                    for (int j = 0; j < 5; j++)
+                    if (currentUserId != usuarioId)
                     {
-                        updatedLines.Add(lines[i + j]);
+                        updatedLines.Add(lines[i]);
+                        updatedLines.Add(lines[i + 1]);
+                        updatedLines.Add(lines[i + 2]); // Add the empty line
                     }
-                }
-                else
-                {
-                    userFound = true;
+                    else
+                    {
+                        userFound = true;
+                        userName = lines[i + 1];
+                    }
                 }
             }
 
@@ -179,14 +208,16 @@ public class Usuario
                 File.WriteAllLines(Usuario.RutaArchivo, updatedLines);
 
                 // Delete the user's folder
-                string userFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                    BuscarUsuarioPorId(usuarioId).Nombre);
+                string userFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, userName);
                 if (Directory.Exists(userFolder))
                 {
                     Directory.Delete(userFolder, true);
+                    Console.WriteLine("Usuario eliminado exitosamente.");
                 }
-
-                Console.WriteLine("Usuario eliminado exitosamente.");
+                else
+                {
+                    Console.WriteLine("Carpeta del usuario no encontrada.");
+                }
             }
             else
             {
@@ -199,35 +230,42 @@ public class Usuario
             throw;
         }
     }
-    
-    public static Usuario? BuscarUsuarioPorId(int usuarioId)
+
+    public static Usuario? BuscarUsuarioPorNombre(string nombreUsuario)
     {
-        try
-        {
-            // Verify if the file exists
-            FileManipulation.VerifyFileLocation(Usuario.RutaArchivo);
-
-            // Read all lines and search for the user
-            var lines = File.ReadAllLines(Usuario.RutaArchivo).ToList();
-
-            for (int i = 0; i < lines.Count; i += 5) // Assuming each user entry has 5 lines
-            {
-                if (int.TryParse(lines[i], out int currentUserId) && currentUserId == usuarioId)
-                {
-                    string nombre = lines[i + 1];
-                    string email = lines[i + 2];
-                    int edad = int.Parse(lines[i + 3]);
-                    Role rol = new Role(int.Parse(lines[i + 4]), ""); 
-
-                    return new Usuario(currentUserId, nombre, email, edad, rol);
-                }
+        try{
+            // Buscar la carpeta con el nombre del usuario
+            string userFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, nombreUsuario);
+            if (!Directory.Exists(userFolder)){
+                Console.WriteLine("Usuario no encontrado.");
+                return null;
             }
 
-            Console.WriteLine("Usuario no encontrado.");
-            return null;
+            // Buscar el archivo .txt dentro de la carpeta del usuario
+            string[] userFiles = Directory.GetFiles(userFolder, "*.txt");
+            if (userFiles.Length == 0){
+                Console.WriteLine("Archivo de usuario no encontrado.");
+                return null;
+            }
+
+            // Leer la información del archivo
+            string userFilePath = userFiles[0];
+            string[] lines = File.ReadAllLines(userFilePath);
+
+            if (lines.Length < 5){
+                Console.WriteLine("Archivo de usuario incompleto.");
+                return null;
+            }
+
+            int usuarioId = int.Parse(lines[0]);
+            string nombre = lines[1];
+            string email = lines[2];
+            int edad = int.Parse(lines[3]);
+            Role rol = new Role(1, lines[4]); // Asumiendo que el RoleName se puede obtener de otra manera
+
+            return new Usuario(usuarioId, nombre, email, edad, rol);
         }
-        catch (Exception e)
-        {
+        catch (Exception e){
             Console.WriteLine("Error al buscar el usuario: " + e.Message);
             throw;
         }

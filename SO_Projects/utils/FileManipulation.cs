@@ -9,11 +9,7 @@ public class FileManipulation
         try
         {
             // Verificar si el archivo ya existe
-            if (File.Exists(filePath))
-            {
-                Console.WriteLine("El archivo ya existe: " + filePath);
-            }
-            else
+            if (!File.Exists(filePath))
             {
                 // Si el archivo no existe, crear los directorios necesarios
                 var directory = Path.GetDirectoryName(filePath);
