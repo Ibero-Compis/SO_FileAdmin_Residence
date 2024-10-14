@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿
 using Lab4_FileManagement.utils;
-
 namespace Lab4_FileManagement;
 
 public class Casa
@@ -107,7 +103,8 @@ public class Casa
                 List<Usuario> habitantes = new List<Usuario>();
                 foreach (string habitanteId in habitantesIds)
                 {
-                    Usuario habitante = Usuario.ObtenerUsuarioPorId(int.Parse(habitanteId));
+                    int id = int.Parse(habitanteId);
+                    Usuario habitante = Usuario.BuscarUsuarioPorId(id); // Method to get Usuario by ID
                     habitantes.Add(habitante);
                 }
 
@@ -182,7 +179,7 @@ public class Casa
         Casa? casa = ObtenerCasaPorId(casaId);
         if (casa != null)
         {
-            Usuario? usuario = Usuario.ObtenerUsuarioPorId(usuarioId);
+            Usuario? usuario = Usuario.BuscarUsuarioPorId(usuarioId);
             if (usuario != null)
             {
                 casa.Habitantes.Add(usuario);
@@ -206,7 +203,7 @@ public class Casa
         Casa? casa = ObtenerCasaPorId(casaId);
         if (casa != null)
         {
-            Usuario? usuario = Usuario.ObtenerUsuarioPorId(usuarioId);
+            Usuario? usuario = Usuario.BuscarUsuarioPorId(usuarioId);
             if (usuario != null)
             {
                 casa.Habitantes.Remove(usuario);

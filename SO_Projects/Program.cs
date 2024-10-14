@@ -1,87 +1,100 @@
-﻿using System;
-using Lab4_FileManagement;
-
-while (true){
-    Console.Clear();
-    Console.WriteLine("Main Menu:");
-    Console.WriteLine("1. Admin Role");
-    Console.WriteLine("2. Vigilant Role");
-    Console.WriteLine("3. Exit");
-    Console.Write("Select an option: ");
-    string mainChoice = Console.ReadLine();
-
-    switch (mainChoice){
-        case "1":
-            AdminMenu();
-            break;
-        case "2":
-            VigilantMenu();
-            break;
-        case "3":
-            return;
-        default:
-            Console.WriteLine("Invalid option. Press any key to try again...");
-            Console.ReadKey();
-            break;
-    }
-}
+﻿using Lab4_FileManagement;
 
 static void AdminMenu()
 {
-    while (true){
+    while (true)
+    {
         Console.Clear();
-        Console.WriteLine("Admin Menu:");
-        Console.WriteLine("1. Admin Option 1");
-        Console.WriteLine("2. Admin Option 2");
-        Console.WriteLine("3. Return to Main Menu");
-        Console.Write("Select an option: ");
+        Console.WriteLine("Menú de Administración:");
+        Console.WriteLine("1. Agregar Usuario");
+        Console.WriteLine("2. Eliminar Usuario");
+        Console.WriteLine("3. Buscar Usuario por ID");
+        Console.WriteLine("4. Volver al Menú Principal");
+        Console.Write("Seleccione una opción: ");
         string adminChoice = Console.ReadLine();
 
-        switch (adminChoice){
+        switch (adminChoice)
+        {
             case "1":
-                Console.WriteLine("Admin Option 1 selected. Press any key to return...");
-                Console.ReadKey();
+                AgregarUsuario();
                 break;
             case "2":
-                Console.WriteLine("Admin Option 2 selected. Press any key to return...");
-                Console.ReadKey();
+                EliminarUsuario();
                 break;
             case "3":
+                BuscarUsuarioPorId();
+                break;
+            case "4":
                 return;
             default:
-                Console.WriteLine("Invalid option. Press any key to try again...");
+                Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
                 Console.ReadKey();
                 break;
         }
     }
 }
 
-static void VigilantMenu()
+static void AgregarUsuario()
 {
-    while (true){
-        Console.Clear();
-        Console.WriteLine("Vigilant Menu:");
-        Console.WriteLine("1. Vigilant Option 1");
-        Console.WriteLine("2. Vigilant Option 2");
-        Console.WriteLine("3. Return to Main Menu");
-        Console.Write("Select an option: ");
-        string vigilantChoice = Console.ReadLine();
+    Console.Clear();
+    Console.Write("Ingrese ID del Usuario: ");
+    int userId = int.Parse(Console.ReadLine());
+    Console.Write("Ingrese Nombre del Usuario: ");
+    string userName = Console.ReadLine();
+    Console.Write("Ingrese Email del Usuario: ");
+    string userEmail = Console.ReadLine();
+    Console.Write("Ingrese Edad del Usuario: ");
+    int userAge = int.Parse(Console.ReadLine());
+    Console.Write("Ingrese Rol del Usuario: ");
+    string userRole = Console.ReadLine();
 
-        switch (vigilantChoice){
-            case "1":
-                Console.WriteLine("Vigilant Option 1 selected. Press any key to return...");
-                Console.ReadKey();
-                break;
-            case "2":
-                Console.WriteLine("Vigilant Option 2 selected. Press any key to return...");
-                Console.ReadKey();
-                break;
-            case "3":
-                return;
-            default:
-                Console.WriteLine("Invalid option. Press any key to try again...");
-                Console.ReadKey();
-                break;
-        }
+    Role role = new Role(1, userRole); // Asumiendo que el ID del rol es 1 por simplicidad
+    Usuario newUser = new Usuario(userId, userName, userEmail, userAge, role);
+
+    // Asumiendo que tienes una instancia de una clase que contiene el método AgregarUsuario
+    Usuario userManager = new Usuario();
+    userManager.AgregarUsuario(newUser);
+
+    Console.WriteLine("Usuario agregado exitosamente. Presione cualquier tecla para volver...");
+    Console.ReadKey();
+}
+
+static void EliminarUsuario()
+{
+    Console.Clear();
+    Console.Write("Ingrese ID del Usuario a eliminar: ");
+    int userId = int.Parse(Console.ReadLine());
+
+    Usuario userManager = new Usuario();
+    userManager.EliminarUsuario(userId);
+
+    Console.WriteLine("Usuario eliminado exitosamente. Presione cualquier tecla para volver...");
+    Console.ReadKey();
+}
+
+static void BuscarUsuarioPorId()
+{
+    Console.Clear();
+    Console.Write("Ingrese ID del Usuario a buscar: ");
+    int userId = int.Parse(Console.ReadLine());
+
+    // Asumiendo que tienes una instancia de una clase que contiene el método BuscarUsuarioPorId
+    Usuario userManager = new Usuario();
+    Usuario? user = Usuario.BuscarUsuarioPorId(userId);
+
+    if (user != null)
+    {
+        Console.WriteLine($"ID del Usuario: {user.UsuarioId}");
+        Console.WriteLine($"Nombre: {user.Nombre}");
+        Console.WriteLine($"Email: {user.Email}");
+        Console.WriteLine($"Edad: {user.Edad}");
+        Console.WriteLine($"Rol: {user.Rol.RoleName}");
     }
+    else
+    {
+        Console.WriteLine("Usuario no encontrado.");
+    }
+
+    Console.WriteLine("Presione cualquier tecla para volver...");
+    Console.ReadKey();
 }

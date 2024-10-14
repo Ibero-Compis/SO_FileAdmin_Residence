@@ -95,8 +95,7 @@ public class Permiso
                 int usuarioId = int.Parse(permisos[i + 4]);
 
                 Casa? casa = Casa.ObtenerCasaPorId(casaId); // Method to get Casa by ID
-                //TODO: To be implemented
-                //Usuario usuario = ObtenerUsuarioPorId(usuarioId); // Method to get Usuario by ID
+                Usuario usuario = Usuario.BuscarUsuarioPorId(usuarioId); // Method to get Usuario by ID
 
                 Console.WriteLine($"Permiso ID: {permisoId}");
                 Console.WriteLine($"Fecha Inicio: {fechaInicio}");
