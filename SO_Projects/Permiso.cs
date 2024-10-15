@@ -12,7 +12,6 @@ public class Permiso
     private DateTime FechaInicio { get; set; }
     private DateTime FechaFin { get; set; }
     private Casa Casa { get; set; }
-
     private Usuario Usuario { get; set; }
 
     // Para mantener la referencia de la tura de los permisos
@@ -25,13 +24,13 @@ public class Permiso
         int nuevoId = 1;
         if (File.Exists(RutaArchivo))
         {
-            string[] informacionUsuarios = File.ReadAllLines(RutaArchivo);
+            string[] permisosInformacion = File.ReadAllLines(RutaArchivo);
             List<int> ids = new List<int>();
-            for (int i = 0; i < informacionUsuarios.Length; i += 5) // Assuming each user entry has 5 lines
+            for (int i = 0; i < permisosInformacion.Length; i += 3) // Assuming each user entry has 2 lines + 1 empty line
             {
-                if (!string.IsNullOrWhiteSpace(informacionUsuarios[i])) // Check if the line is not empty
+                if (!string.IsNullOrWhiteSpace(permisosInformacion[i])) // Check if the line is not empty
                 {
-                    ids.Add(int.Parse(informacionUsuarios[i]));
+                    ids.Add(int.Parse(permisosInformacion[i]));
                 }
             }
 
@@ -43,13 +42,7 @@ public class Permiso
 
         return nuevoId;
     }
-
-    // Verificar si existe el archivo principal de la clase
-    public bool VerificarRutaArchivo()
-    {
-        return File.Exists(RutaArchivo);
-    }
-
+    
     public Permiso()
     {
         PermisoId = GenerarNuevoId();
@@ -67,23 +60,25 @@ public class Permiso
         this.Casa = Casa;
         this.Usuario = Usuario;
     }
-    
+
     public void AgregarPermiso(Permiso permiso)
     {
         // Obtener casa Id y Usuario Id
         int CasaId = permiso.Casa.CasaId;
         int UsuarioId = permiso.Usuario.UsuarioId;
 
-        try{
+        try
+        {
             // Verificar si el archivo existe
             FileManipulation.VerifyFileLocation(RutaArchivo);
 
             // Parasear la informacion del permiso
             string permisoInfo =
-                $"{permiso.PermisoId}\n{permiso.FechaInicio}\n{permiso.FechaFin}\n{CasaId}\n{UsuarioId}\n\n";
+                $"{permiso.PermisoId}\n{permiso.FechaInicio}\n{permiso.FechaFin}\n{CasaId}\n{UsuarioId}\n"; // Ensure single newline at the end
             FileManipulation.AppendLineToFile(RutaArchivo, permisoInfo);
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             Console.WriteLine("Error al agregar el permiso:  " + e.Message);
             throw;
         }
@@ -92,57 +87,87 @@ public class Permiso
     public void MostrarPermisos()
     {
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        string filePath = Path.Combine(baseDirectory, "permisos.txt");
+        string filePath = Path.Combine(baseDirectory, "db_data", "permisos", "permisos.txt");
 
-        if (File.Exists(filePath)){
-            string[] permisos = File.ReadAllLines(filePath);
-            for (int i = 0; i < permisos.Length; i += 6) // Assuming each permission entry has 6 lines
+        try
+        {
+            if (File.Exists(filePath))
             {
-                int permisoId = int.Parse(permisos[i]);
-                DateTime fechaInicio = DateTime.Parse(permisos[i + 1]);
-                DateTime fechaFin = DateTime.Parse(permisos[i + 2]);
-                int casaId = int.Parse(permisos[i + 3]);
-                int usuarioId = int.Parse(permisos[i + 4]);
+                string[] permisos = File.ReadAllLines(filePath);
+                for (int i = 0; i < permisos.Length; i += 6) // Adjusted to handle the format correctly
+                {
+                    if (string.IsNullOrWhiteSpace(permisos[i])) // Skip empty lines
+                    {
+                        continue;
+                    }
 
-                Casa? casa = Casa.ObtenerCasaPorId(casaId); // Method to get Casa by ID
-                Usuario usuario = Usuario.BuscarUsuarioPorId(usuarioId); // Method to get Usuario by ID
+                    int permisoId = int.Parse(permisos[i]);
+                    DateTime fechaInicio = DateTime.Parse(permisos[i + 1]);
+                    DateTime fechaFin = DateTime.Parse(permisos[i + 2]);
+                    int casaId = int.Parse(permisos[i + 3]);
+                    int usuarioId = int.Parse(permisos[i + 4]);
 
-                Console.WriteLine($"Permiso ID: {permisoId}");
-                Console.WriteLine($"Fecha Inicio: {fechaInicio}");
-                Console.WriteLine($"Fecha Fin: {fechaFin}");
-                Console.WriteLine($"Casa Numero: {casa.NumeroCasa}");
-                Console.WriteLine($"Usuario Nombre: {usuario.Nombre}");
-                Console.WriteLine();
+                    Casa? casa = Casa.ObtenerCasaPorId(casaId); // Method to get Casa by ID
+                    Usuario usuario = Usuario.BuscarUsuarioPorId(usuarioId); // Method to get Usuario by ID
+
+                    Console.WriteLine($"Permiso ID: {permisoId}");
+                    Console.WriteLine($"Fecha Inicio: {fechaInicio}");
+                    Console.WriteLine($"Fecha Fin: {fechaFin}");
+                    Console.WriteLine($"Casa Numero: {casa.NumeroCasa}");
+                    Console.WriteLine($"Usuario Nombre: {usuario.Nombre}");
+                    Console.WriteLine();
+                }
+            }
+            else
+            {
+                Console.WriteLine("No hay permisos registrados.");
             }
         }
-        else{
-            Console.WriteLine("No hay permisos registrados.");
+        catch (Exception e)
+        {
+            Console.WriteLine("Error al mostrar permisos: " + e.Message);
         }
     }
-
+    
     public void EliminarPermiso(int permisoId)
     {
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        string filePath = Path.Combine(baseDirectory, "permisos.txt");
+        string filePath = Path.Combine(baseDirectory, "db_data", "permisos", "permisos.txt");
 
-        if (File.Exists(filePath)){
+        if (File.Exists(filePath))
+        {
             string[] permisos = File.ReadAllLines(filePath);
             List<string> updatedPermisos = new List<string>();
 
             for (int i = 0; i < permisos.Length; i += 6) // Assuming each permission entry has 6 lines
             {
-                int currentPermisoId = int.Parse(permisos[i]);
-                if (currentPermisoId != permisoId){
-                    for (int j = 0; j < 6; j++){
-                        updatedPermisos.Add(permisos[i + j]);
+                if (string.IsNullOrWhiteSpace(permisos[i])) // Skip empty lines
+                {
+                    continue;
+                }
+
+                int currentPermisoId;
+                if (int.TryParse(permisos[i], out currentPermisoId) && currentPermisoId != permisoId)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        if (i + j < permisos.Length)
+                        {
+                            updatedPermisos.Add(permisos[i + j]);
+                        }
                     }
+                    updatedPermisos.Add(""); // Add a single empty line after each permission entry
                 }
             }
 
-            File.WriteAllLines(filePath, updatedPermisos);
+            // Ensure the updated permissions list maintains the correct format
+            string formattedPermisos = string.Join(Environment.NewLine, updatedPermisos);
+            formattedPermisos = formattedPermisos.TrimEnd() + "\n\n"; // Ensure exactly two empty lines at the end
+            File.WriteAllText(filePath, formattedPermisos);
             Console.WriteLine($"Permiso con ID {permisoId} ha sido eliminado.");
         }
-        else{
+        else
+        {
             Console.WriteLine("No hay permisos registrados.");
         }
     }

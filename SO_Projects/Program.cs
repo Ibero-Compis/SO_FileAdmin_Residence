@@ -506,13 +506,18 @@ namespace Lab4_FileManagement
         static void EliminarPermiso()
         {
             Console.Clear();
+            
+            Permiso permisoManager = new Permiso();
+            permisoManager.MostrarPermisos();
+            Console.WriteLine("Presione cualquier tecla para volver...");
+            Console.ReadKey();
+            
             int permisoId;
             while (true)
             {
                 Console.Write("Ingrese ID del Permiso a eliminar: ");
                 if (int.TryParse(Console.ReadLine(), out permisoId) && permisoId > 0)
                 {
-                    Permiso permisoManager = new Permiso();
                     permisoManager.EliminarPermiso(permisoId);
                     Console.WriteLine("Permiso eliminado exitosamente.");
                     break;
