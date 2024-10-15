@@ -403,13 +403,17 @@ namespace Lab4_FileManagement
         static void EliminarCasa()
         {
             Console.Clear();
+            // Mostrar todas las casas
+            Casa casaManager = new Casa();
+            casaManager.MostrarCasas();
+            Console.WriteLine();
+            
             int casaId;
             while (true)
             {
                 Console.Write("Ingrese ID de la Casa a eliminar: ");
                 if (int.TryParse(Console.ReadLine(), out casaId) && casaId > 0)
                 {
-                    Casa casaManager = new Casa();
                     casaManager.EliminarCasa(casaId);
                     Console.WriteLine("Casa eliminada exitosamente.");
                     break;
@@ -427,6 +431,12 @@ namespace Lab4_FileManagement
         static void AgregarHabitante()
         {
             Console.Clear();
+            
+            // Mostrar todas las casas
+            Casa casaManager = new Casa();
+            casaManager.MostrarCasas();
+            Console.WriteLine();
+            
             int casaId;
             while (true)
             {
@@ -455,7 +465,6 @@ namespace Lab4_FileManagement
                 }
             }
 
-            Casa casaManager = new Casa();
             casaManager.AgregarHabitante(casaId, usuarioId);
 
             Console.WriteLine("Habitante agregado exitosamente. Presione cualquier tecla para volver...");
@@ -465,6 +474,11 @@ namespace Lab4_FileManagement
         static void EliminarHabitante()
         {
             Console.Clear();
+            // Mostrar todas las casas
+            Casa casaManager = new Casa();
+            casaManager.MostrarCasas();
+            Console.WriteLine();
+            
             int casaId;
             while (true)
             {
@@ -493,7 +507,6 @@ namespace Lab4_FileManagement
                 }
             }
 
-            Casa casaManager = new Casa();
             casaManager.EliminarHabitante(casaId, usuarioId);
 
             Console.WriteLine("Habitante eliminado exitosamente. Presione cualquier tecla para volver...");

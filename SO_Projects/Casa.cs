@@ -70,7 +70,7 @@ public class Casa
         {
             FileManipulation.VerifyFileLocation(RutaArchivo);
 
-            string casaInfo = $"{casaId}\n{numeroCasa}\n{direccion}\n{habitantesIds}";
+            string casaInfo = $"{casaId}\n{numeroCasa}\n{direccion}\n{habitantesIds}\n";
             File.AppendAllText(RutaArchivo, casaInfo + "\n");
         }
         catch (Exception e)
@@ -85,24 +85,30 @@ public class Casa
         List<Casa> casas = new List<Casa>();
         string filePath = RutaArchivo;
 
-        if (File.Exists(filePath)){
+        if (File.Exists(filePath))
+        {
             string[] casasData = File.ReadAllLines(filePath);
-            for (int i = 0; i < casasData.Length; i += 4) // Assuming each casa entry has 3 or 4 lines
+            for (int i = 0; i < casasData.Length; i += 5) // 4 lines of data + 1 blank line
             {
                 if (!string.IsNullOrWhiteSpace(casasData[i]) &&
                     !string.IsNullOrWhiteSpace(casasData[i + 1]) &&
-                    !string.IsNullOrWhiteSpace(casasData[i + 2])){
+                    !string.IsNullOrWhiteSpace(casasData[i + 2]))
+                {
                     int casaId = int.Parse(casasData[i]);
                     int numeroCasa = int.Parse(casasData[i + 1]);
                     string direccion = casasData[i + 2];
                     List<Usuario> habitantes = new List<Usuario>();
 
-                    if (i + 3 < casasData.Length && !string.IsNullOrWhiteSpace(casasData[i + 3])){
+                    if (i + 3 < casasData.Length && !string.IsNullOrWhiteSpace(casasData[i + 3]))
+                    {
                         string[] habitantesIds = casasData[i + 3].Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        foreach (string habitanteId in habitantesIds){
-                            if (int.TryParse(habitanteId, out int id)){
+                        foreach (string habitanteId in habitantesIds)
+                        {
+                            if (int.TryParse(habitanteId, out int id))
+                            {
                                 Usuario habitante = Usuario.BuscarUsuarioPorId(id); // Method to get Usuario by ID
-                                if (habitante != null){
+                                if (habitante != null)
+                                {
                                     habitantes.Add(habitante);
                                 }
                             }
@@ -131,15 +137,16 @@ public class Casa
     public void MostrarCasas()
     {
         List<Casa> casas = ObtenerCasas();
-        foreach (Casa casa in casas){
+        foreach (Casa casa in casas)
+        {
             Console.WriteLine($"Casa ID: {casa.CasaId}");
             Console.WriteLine($"Número de Casa: {casa.NumeroCasa}");
             Console.WriteLine($"Dirección: {casa.Direccion}");
             Console.WriteLine("Habitantes:");
-            foreach (Usuario habitante in casa.Habitantes){
+            foreach (Usuario habitante in casa.Habitantes)
+            {
                 Console.WriteLine($"- {habitante.Nombre}");
             }
-
             Console.WriteLine();
         }
     }
@@ -153,14 +160,14 @@ public class Casa
             string[] casasData = File.ReadAllLines(filePath);
             List<string> updatedCasas = new List<string>();
 
-            for (int i = 0; i < casasData.Length; i += 4) // Assuming each casa entry has 3 or 4 lines
+            for (int i = 0; i < casasData.Length; i += 5) // 4 lines of data + 1 blank line
             {
                 int currentCasaId = int.Parse(casasData[i]);
                 if (currentCasaId != casaId)
                 {
-                    for (int j = 0; j < 4; j++)
+                    for (int j = 0; j < 5; j++)
                     {
-                        if (i + j < casasData.Length && !string.IsNullOrWhiteSpace(casasData[i + j]))
+                        if (i + j < casasData.Length)
                         {
                             updatedCasas.Add(casasData[i + j]);
                         }
@@ -208,12 +215,12 @@ public class Casa
             string[] casasData = File.ReadAllLines(filePath);
             List<string> updatedCasas = new List<string>();
 
-            for (int i = 0; i < casasData.Length; i += 4) // Assuming each casa entry has 3 or 4 lines
+            for (int i = 0; i < casasData.Length; i += 5) // 4 lines of data + 1 blank line
             {
                 int currentCasaId = int.Parse(casasData[i]);
                 if (currentCasaId != casa.CasaId)
                 {
-                    for (int j = 0; j < 4; j++)
+                    for (int j = 0; j < 5; j++)
                     {
                         if (i + j < casasData.Length)
                         {
@@ -227,6 +234,7 @@ public class Casa
                     updatedCasas.Add(casa.NumeroCasa.ToString());
                     updatedCasas.Add(casa.Direccion);
                     updatedCasas.Add(string.Join(",", casa.Habitantes.Select(h => h.UsuarioId)));
+                    updatedCasas.Add(""); // Add blank line
                 }
             }
 
@@ -237,47 +245,83 @@ public class Casa
     public void EliminarHabitante(int casaId, int usuarioId)
     {
         Casa? casa = ObtenerCasaPorId(casaId);
-        if (casa != null){
+        if (casa != null)
+        {
             Usuario? usuario = Usuario.BuscarUsuarioPorId(usuarioId);
-            if (usuario != null){
+            if (usuario != null)
+            {
+                // Remove the user from the list of inhabitants
                 casa.Habitantes.Remove(usuario);
-                EliminarCasa(casaId);
-                AgregarCasa(casa);
-                Console.WriteLine("Habitante eliminado exitosamente.");
+
+                // Update the file with the new list of inhabitants
+                string filePath = Casa.RutaArchivo;
+                if (File.Exists(filePath))
+                {
+                    string[] casasData = File.ReadAllLines(filePath);
+                    List<string> updatedCasas = new List<string>();
+
+                    for (int i = 0; i < casasData.Length; i += 5) // 4 lines of data + 1 blank line
+                    {
+                        int currentCasaId = int.Parse(casasData[i]);
+                        if (currentCasaId != casa.CasaId)
+                        {
+                            for (int j = 0; j < 5; j++)
+                            {
+                                if (i + j < casasData.Length)
+                                {
+                                    updatedCasas.Add(casasData[i + j]);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            updatedCasas.Add(casa.CasaId.ToString());
+                            updatedCasas.Add(casa.NumeroCasa.ToString());
+                            updatedCasas.Add(casa.Direccion);
+                            updatedCasas.Add(string.Join(",", casa.Habitantes.Select(h => h.UsuarioId)));
+                            updatedCasas.Add(""); // Add blank line
+                        }
+                    }
+
+                    File.WriteAllLines(filePath, updatedCasas);
+                    Console.WriteLine("Habitante eliminado exitosamente.");
+                }
             }
-            else{
+            else
+            {
                 Console.WriteLine("El usuario no existe.");
             }
         }
-        else{
+        else
+        {
             Console.WriteLine("La casa no existe.");
         }
     }
 
-    public void MostrarHabitantes(int casaId)
-    {
-        Casa? casa = ObtenerCasaPorId(casaId);
-        if (casa != null){
-            Console.WriteLine($"Habitantes de la Casa {casa.NumeroCasa}:");
-            foreach (Usuario habitante in casa.Habitantes){
-                Console.WriteLine($"- {habitante.Nombre}");
-            }
-        }
-        else{
-            Console.WriteLine("La casa no existe.");
-        }
-    }
+    // public void MostrarHabitantes(int casaId)
+    // {
+    //     Casa? casa = ObtenerCasaPorId(casaId);
+    //     if (casa != null){
+    //         Console.WriteLine($"Habitantes de la Casa {casa.NumeroCasa}:");
+    //         foreach (Usuario habitante in casa.Habitantes){
+    //             Console.WriteLine($"- {habitante.Nombre}");
+    //         }
+    //     }
+    //     else{
+    //         Console.WriteLine("La casa no existe.");
+    //     }
+    // }
 
-    public void MostrarHabitantesDeTodasLasCasas()
-    {
-        List<Casa> casas = ObtenerCasas();
-        foreach (Casa casa in casas){
-            Console.WriteLine($"Habitantes de la Casa {casa.NumeroCasa}:");
-            foreach (Usuario habitante in casa.Habitantes){
-                Console.WriteLine($"- {habitante.Nombre}");
-            }
-
-            Console.WriteLine();
-        }
-    }
+    // public void MostrarHabitantesDeTodasLasCasas()
+    // {
+    //     List<Casa> casas = ObtenerCasas();
+    //     foreach (Casa casa in casas){
+    //         Console.WriteLine($"Habitantes de la Casa {casa.NumeroCasa}:");
+    //         foreach (Usuario habitante in casa.Habitantes){
+    //             Console.WriteLine($"- {habitante.Nombre}");
+    //         }
+    //
+    //         Console.WriteLine();
+    //     }
+    // }
 }
