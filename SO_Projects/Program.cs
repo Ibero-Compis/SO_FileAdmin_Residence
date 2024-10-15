@@ -6,41 +6,78 @@ namespace Lab4_FileManagement
     {
         static void Main(string[] args)
         {
-            AdminMenu();
+            CrearAdminSiNoExiste();
+            IniciarSesion();
         }
-        
-        static void IniciarSesion()
-        {
-            Console.Clear();
-            Console.Write("Ingrese Email: ");
-            string email = Console.ReadLine();
-            Console.Write("Ingrese Contraseña: ");
-            string password = Console.ReadLine();
 
-            Usuario? user = Usuario.IniciarSesion(email, password);
-            if (user != null)
+        static void CrearAdminSiNoExiste()
+        {
+            string adminEmail = "admin@example.com";
+            string adminPassword = "admin123";
+
+            // Check if the admin user already exists
+            Usuario? adminUser = Usuario.BuscarUsuarioPorEmail(adminEmail);
+            if (adminUser == null)
             {
-                switch (user.Rol.RoleName)
+                // Admin user does not exist, create a new one
+                Usuario newAdmin = new Usuario
                 {
-                    case "Admin":
-                        AdminMenu();
-                        break;
-                    case "Vigilante":
-                        VigilantMenu();
-                        break;
-                    default:
-                        Console.WriteLine("Rol no válido. Presione cualquier tecla para intentar de nuevo...");
-                        Console.ReadKey();
-                        break;
-                }
+                    Nombre = "Admin",
+                    Email = adminEmail,
+                    Password = adminPassword,
+                    Edad = 30,
+                    Rol = new Role(1, "Admin")
+                };
+
+                Usuario userManager = new Usuario();
+                userManager.AgregarUsuario(newAdmin);
+
+                Console.WriteLine("Usuario admin creado exitosamente.");
             }
             else
             {
-                Console.WriteLine("Email o contraseña incorrectos. Presione cualquier tecla para intentar de nuevo...");
-                Console.ReadKey();
+                Console.WriteLine("Usuario admin ya existe.");
             }
         }
-        
+
+        static void IniciarSesion()
+        {
+            Usuario? user;
+            do
+            {
+                Console.Clear();
+                Console.Write("Ingrese Email: ");
+                string email = Console.ReadLine();
+                Console.Write("Ingrese Contraseña: ");
+                string password = Console.ReadLine();
+
+                user = Usuario.IniciarSesion(email, password);
+                if (user == null)
+                {
+                    Console.WriteLine(
+                        "Email o contraseña incorrectos. Presione cualquier tecla para intentar de nuevo...");
+                    Console.ReadKey();
+                }
+            } while (user == null);
+
+            switch (user.Rol.RoleName)
+            {
+                case "Admin":
+                    AdminMenu();
+                    break;
+                case "Vigilante":
+                    VigilantMenu();
+                    break;
+                case "Residente":
+                    ResidentMenu();
+                    break;
+                default:
+                    Console.WriteLine("Rol no válido. Presione cualquier tecla para intentar de nuevo...");
+                    Console.ReadKey();
+                    break;
+            }
+        }
+
         static void PrincipalMenu()
         {
             while (true)
@@ -68,7 +105,35 @@ namespace Lab4_FileManagement
                 }
             }
         }
-        
+
+        static void ResidentMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("===== Menú de Residente =====");
+                Console.WriteLine("1. Mostrar Permisos");
+                Console.WriteLine("2. Volver al Menú Principal");
+                Console.WriteLine("==================================");
+                Console.Write("Seleccione una opción: ");
+                string residentChoice = Console.ReadLine();
+
+                switch (residentChoice)
+                {
+                    case "1":
+                        MostrarPermisos();
+                        break;
+                    case "2":
+                        PrincipalMenu();
+                        return;
+                    default:
+                        Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+
         static void VigilantMenu()
         {
             while (true)
@@ -175,7 +240,7 @@ namespace Lab4_FileManagement
                         EliminarPermiso();
                         break;
                     case "4":
-                        
+
                         return;
                     default:
                         Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
@@ -248,6 +313,14 @@ namespace Lab4_FileManagement
                 newUser.Email = Console.ReadLine();
             }
 
+            Console.Write("Ingrese Contraseña del Usuario: ");
+            newUser.Password = Console.ReadLine();
+            while (string.IsNullOrWhiteSpace(newUser.Password))
+            {
+                Console.WriteLine("La contraseña no puede estar vacía. Intente de nuevo.");
+                newUser.Password = Console.ReadLine();
+            }
+
             int edad;
             while (true)
             {
@@ -318,6 +391,7 @@ namespace Lab4_FileManagement
                     {
                         Console.WriteLine("Usuario no encontrado.");
                     }
+
                     break;
                 }
                 else
@@ -501,7 +575,7 @@ namespace Lab4_FileManagement
             Casa casaManager = new Casa();
             casaManager.MostrarCasas();
             Console.WriteLine();
-            
+
             int casaId;
             while (true)
             {
@@ -525,12 +599,12 @@ namespace Lab4_FileManagement
         static void AgregarHabitante()
         {
             Console.Clear();
-            
+
             // Mostrar todas las casas
             Casa casaManager = new Casa();
             casaManager.MostrarCasas();
             Console.WriteLine();
-            
+
             int casaId;
             while (true)
             {
@@ -572,7 +646,7 @@ namespace Lab4_FileManagement
             Casa casaManager = new Casa();
             casaManager.MostrarCasas();
             Console.WriteLine();
-            
+
             int casaId;
             while (true)
             {
