@@ -12,31 +12,35 @@ namespace Lab4_FileManagement
 
         static void CrearAdminSiNoExiste()
         {
-            string adminEmail = "admin@example.com";
-            string adminPassword = "admin123";
+            CrearUsuarioSiNoExiste("admin@example.com", "admin123", "Admin", 30, new Role(1, "Admin"));
+            CrearUsuarioSiNoExiste("vigilante@example.com", "vigilante123", "Vigilante", 25, new Role(2, "Vigilante"));
+            CrearUsuarioSiNoExiste("residente@example.com", "residente123", "Residente", 35, new Role(3, "Residente"));
+        }
 
-            // Check if the admin user already exists
-            Usuario? adminUser = Usuario.BuscarUsuarioPorEmail(adminEmail);
-            if (adminUser == null)
+        static void CrearUsuarioSiNoExiste(string email, string password, string nombre, int edad, Role rol)
+        {
+            // Check if the user already exists
+            Usuario? user = Usuario.BuscarUsuarioPorEmail(email);
+            if (user == null)
             {
-                // Admin user does not exist, create a new one
-                Usuario newAdmin = new Usuario
+                // User does not exist, create a new one
+                Usuario newUser = new Usuario
                 {
-                    Nombre = "Admin",
-                    Email = adminEmail,
-                    Password = adminPassword,
-                    Edad = 30,
-                    Rol = new Role(1, "Admin")
+                    Nombre = nombre,
+                    Email = email,
+                    Password = password,
+                    Edad = edad,
+                    Rol = rol
                 };
 
                 Usuario userManager = new Usuario();
-                userManager.AgregarUsuario(newAdmin);
+                userManager.AgregarUsuario(newUser);
 
-                Console.WriteLine("Usuario admin creado exitosamente.");
+                Console.WriteLine($"Usuario {nombre} creado exitosamente.");
             }
             else
             {
-                Console.WriteLine("Usuario admin ya existe.");
+                Console.WriteLine($"Usuario {nombre} ya existe.");
             }
         }
 
@@ -153,11 +157,43 @@ namespace Lab4_FileManagement
                         MostrarPermisos();
                         break;
                     case "2":
-                        // TODO IMPLEMENTAR REGISTRO DE ENTRADA 
-                        return;
+                        Console.WriteLine("Registrar Entrada");
+                        // pedir datos de la entrada
+                        Console.Write("Ingrese ID del Permiso: ");
+                        int permisoId;
+                        while (true)
+                        {
+                            if (int.TryParse(Console.ReadLine(), out permisoId) && permisoId > 0)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                Console.WriteLine("ID inválido. Debe ser un número mayor que 0.");
+                            }
+                        }
+                        
+                        Console.Write("Ingrese comentario: ");
+                        string comentario = Console.ReadLine();
+                        while (string.IsNullOrWhiteSpace(comentario))
+                        {
+                            Console.WriteLine("El comentario no puede estar vacío. Intente de nuevo.");
+                            comentario = Console.ReadLine();
+                        }
+
+                        DateTime fecha = DateTime.Now;
+                        Console.WriteLine("Fecha de ingreso: " + fecha.ToString("MM/dd/yyyy"));
+                        
+                        Console.Write("Ingrese terminal: ");
+                        string terminal = Console.ReadLine();
+                        
+                        Entrada nuevaEntrada = new Entrada(comentario, fecha, terminal, permisoId);
+                        nuevaEntrada.AgregarEntrada(nuevaEntrada);
+                        Console.WriteLine("Entrada registrada exitosamente. Presione cualquier tecla para volver...");
+                        break;
                     case "3":
                         PrincipalMenu();
-                        return;
+                        break;
                     default:
                         Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
                         Console.ReadKey();

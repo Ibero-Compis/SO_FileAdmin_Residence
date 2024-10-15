@@ -1,4 +1,8 @@
-﻿namespace Lab4_FileManagement;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace Lab4_FileManagement;
 
 public class Entrada
 {
@@ -51,7 +55,7 @@ public class Entrada
     // ARCHIVOS
     // Lógica de localización de archivos TODO:ARREGLAR
     private static readonly string BaseDirectory =
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "NSdb_files", "Data", "Entrada"); // Relative file location
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db_data", "Entrada"); // Relative file location
 
     //private const string FileName = "tbl_rol.txt"; // File name
     //protected internal static readonly string FilePath = Path.Combine(BaseDirectory, FileName); // Full path
@@ -59,6 +63,7 @@ public class Entrada
     // metodo para agregar una entrada utilizando archivos
     public void AgregarEntrada(Entrada entrada)
     {
+        Console.WriteLine("Agregando entrada...");
         // buscar la direccion de la carpeta
         if (!Directory.Exists(BaseDirectory))
         {
