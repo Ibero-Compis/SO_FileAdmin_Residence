@@ -13,7 +13,9 @@ public class Usuario
 
     public static string RutaArchivo =
         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db_data", "usuarios.txt");
-
+    public static readonly string RutaBaseUsuarios =
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db_data", "Users");
+    
     public ICollection<Permiso> Permisos { get; set; }
 
     // Constructor de la clase Usuario
@@ -36,14 +38,23 @@ public class Usuario
         Edad = 0;
         Rol = new Role(1, "Residente");
     }
+    
+    static Usuario()
+    {
+        if (!Directory.Exists(RutaBaseUsuarios))
+        {
+            Directory.CreateDirectory(RutaBaseUsuarios);
+        }
+    }
 
     private static int GenerarNuevoId()
     {
         int nuevoId = 1;
-        if (File.Exists(RutaArchivo)){
+        if (File.Exists(RutaArchivo))
+        {
             string[] usersData = File.ReadAllLines(RutaArchivo);
             List<int> ids = new List<int>();
-            for (int i = 0; i < usersData.Length; i += 6) // Assuming each user entry has 6 lines
+            for (int i = 0; i < usersData.Length; i += 3) // Assuming each user entry has 2 lines + 1 empty line
             {
                 if (!string.IsNullOrWhiteSpace(usersData[i])) // Check if the line is not empty
                 {
@@ -51,7 +62,8 @@ public class Usuario
                 }
             }
 
-            if (ids.Count > 0){
+            if (ids.Count > 0)
+            {
                 nuevoId = ids.Max() + 1;
             }
         }
@@ -61,11 +73,12 @@ public class Usuario
 
     public void CrearArchivoUsuario(Usuario usuario)
     {
-        string userFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, usuario.Nombre);
+        string userFolder = Path.Combine(RutaBaseUsuarios, usuario.Nombre);
         Directory.CreateDirectory(userFolder);
 
         string userFilePath = Path.Combine(userFolder, $"{usuario.UsuarioId}_{usuario.Nombre}.txt");
-        using (StreamWriter sw = File.CreateText(userFilePath)){
+        using (StreamWriter sw = File.CreateText(userFilePath))
+        {
             sw.WriteLine(usuario.UsuarioId);
             sw.WriteLine(usuario.Nombre);
             sw.WriteLine(usuario.Email);
@@ -100,28 +113,30 @@ public class Usuario
 
     public static Usuario? BuscarUsuarioPorId(int usuarioId)
     {
-        try{
-            // Get the base directory where user folders are stored
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
+        try
+        {
             // Get all user folders
-            string[] userFolders = Directory.GetDirectories(baseDirectory);
+            string[] userFolders = Directory.GetDirectories(RutaBaseUsuarios);
 
-            foreach (string userFolder in userFolders){
+            foreach (string userFolder in userFolders)
+            {
                 // Get all .txt files in the user folder
                 string[] userFiles = Directory.GetFiles(userFolder, "*.txt");
 
-                foreach (string userFile in userFiles){
+                foreach (string userFile in userFiles)
+                {
                     // Extract the file name without extension
                     string fileName = Path.GetFileNameWithoutExtension(userFile);
 
                     // Split the file name to get the ID and name
                     string[] parts = fileName.Split('_');
-                    if (parts.Length == 2 && int.TryParse(parts[0], out int fileUserId) && fileUserId == usuarioId){
+                    if (parts.Length == 2 && int.TryParse(parts[0], out int fileUserId) && fileUserId == usuarioId)
+                    {
                         // Read the user file
                         string[] lines = File.ReadAllLines(userFile);
 
-                        if (lines.Length >= 6){
+                        if (lines.Length >= 6)
+                        {
                             string nombre = lines[1];
                             string email = lines[2];
                             int edad = int.Parse(lines[3]);
@@ -137,7 +152,8 @@ public class Usuario
             Console.WriteLine("Usuario no encontrado.");
             return null;
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             Console.WriteLine("Error al buscar el usuario: " + e.Message);
             throw;
         }
@@ -167,10 +183,9 @@ public class Usuario
                 if (i + 1 < lines.Count) // Ensure there are enough lines for a complete user entry
                 {
                     int usuarioId = int.Parse(lines[i]);
-                    string nombre = lines[i + 1];
 
                     // Search for the user by name
-                    Usuario? usuario = BuscarUsuarioPorNombre(nombre);
+                    Usuario? usuario = BuscarUsuarioPorId(usuarioId);
                     if (usuario != null){
                         Console.WriteLine($"ID del Usuario: {usuario.UsuarioId}");
                         Console.WriteLine($"Nombre: {usuario.Nombre}");
@@ -239,69 +254,30 @@ public class Usuario
         }
     }
 
-    public static Usuario? BuscarUsuarioPorNombre(string nombreUsuario)
-    {
-        try{
-            // Buscar la carpeta con el nombre del usuario
-            string userFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, nombreUsuario);
-            if (!Directory.Exists(userFolder)){
-                Console.WriteLine("Usuario no encontrado.");
-                return null;
-            }
-
-            // Buscar el archivo .txt dentro de la carpeta del usuario
-            string[] userFiles = Directory.GetFiles(userFolder, "*.txt");
-            if (userFiles.Length == 0){
-                Console.WriteLine("Archivo de usuario no encontrado.");
-                return null;
-            }
-
-            // Leer la información del archivo
-            string userFilePath = userFiles[0];
-            string[] lines = File.ReadAllLines(userFilePath);
-
-            if (lines.Length < 6){
-                Console.WriteLine("Archivo de usuario incompleto.");
-                return null;
-            }
-
-            int usuarioId = int.Parse(lines[0]);
-            string nombre = lines[1];
-            string email = lines[2];
-            int edad = int.Parse(lines[3]);
-            Role rol = new Role(1, lines[4]); // Asumiendo que el RoleName se puede obtener de otra manera
-            string password = lines[5];
-
-            return new Usuario(usuarioId, nombre, email, edad, rol, password);
-        }
-        catch (Exception e){
-            Console.WriteLine("Error al buscar el usuario: " + e.Message);
-            throw;
-        }
-    }
-
     public static Usuario? BuscarUsuarioPorEmail(string emailUsuario)
     {
-        try{
-            // Get the base directory where user folders are stored
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
+        try
+        {
             // Get all user folders
-            string[] userFolders = Directory.GetDirectories(baseDirectory);
+            string[] userFolders = Directory.GetDirectories(RutaBaseUsuarios);
 
-            foreach (string userFolder in userFolders){
+            foreach (string userFolder in userFolders)
+            {
                 // Get all .txt files in the user folder
                 string[] userFiles = Directory.GetFiles(userFolder, "*.txt");
 
-                foreach (string userFile in userFiles){
+                foreach (string userFile in userFiles)
+                {
                     // Read the user file
                     string[] lines = File.ReadAllLines(userFile);
 
-                    if (lines.Length >= 6){
+                    if (lines.Length >= 6)
+                    {
                         string fileEmail = lines[2];
 
                         // Check if the email matches
-                        if (fileEmail == emailUsuario){
+                        if (fileEmail == emailUsuario)
+                        {
                             int usuarioId = int.Parse(lines[0]);
                             string nombre = lines[1];
                             int edad = int.Parse(lines[3]);
@@ -317,7 +293,8 @@ public class Usuario
             Console.WriteLine("Usuario no encontrado.");
             return null;
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             Console.WriteLine("Error al buscar el usuario: " + e.Message);
             throw;
         }
@@ -325,27 +302,29 @@ public class Usuario
 
     public static Usuario? IniciarSesion(string? email, string? password)
     {
-        try{
-            // Get the base directory where user folders are stored
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
+        try
+        {
             // Get all user folders
-            string[] userFolders = Directory.GetDirectories(baseDirectory);
+            string[] userFolders = Directory.GetDirectories(RutaBaseUsuarios);
 
-            foreach (string userFolder in userFolders){
+            foreach (string userFolder in userFolders)
+            {
                 // Get all .txt files in the user folder
                 string[] userFiles = Directory.GetFiles(userFolder, "*.txt");
 
-                foreach (string userFile in userFiles){
+                foreach (string userFile in userFiles)
+                {
                     // Read the user file
                     string[] lines = File.ReadAllLines(userFile);
 
-                    if (lines.Length >= 6){
+                    if (lines.Length >= 6)
+                    {
                         string fileEmail = lines[2];
                         string filePassword = lines[5];
 
                         // Check if the email and password match
-                        if (fileEmail == email && filePassword == password){
+                        if (fileEmail == email && filePassword == password)
+                        {
                             int usuarioId = int.Parse(lines[0]);
                             string nombre = lines[1];
                             int edad = int.Parse(lines[3]);
@@ -360,7 +339,8 @@ public class Usuario
             Console.WriteLine("Usuario no encontrado.");
             return null;
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             Console.WriteLine("Error al buscar el usuario: " + e.Message);
             throw;
         }
