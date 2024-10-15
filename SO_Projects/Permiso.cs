@@ -23,15 +23,20 @@ public class Permiso
     private static int GenerarNuevoId()
     {
         int nuevoId = 1;
-        if (File.Exists(RutaArchivo)){
-            string[] casasData = File.ReadAllLines(RutaArchivo);
+        if (File.Exists(RutaArchivo))
+        {
+            string[] informacionUsuarios = File.ReadAllLines(RutaArchivo);
             List<int> ids = new List<int>();
-            for (int i = 0; i < casasData.Length; i += 5) // Assuming each casa entry has 5 lines
+            for (int i = 0; i < informacionUsuarios.Length; i += 5) // Assuming each user entry has 5 lines
             {
-                ids.Add(int.Parse(casasData[i]));
+                if (!string.IsNullOrWhiteSpace(informacionUsuarios[i])) // Check if the line is not empty
+                {
+                    ids.Add(int.Parse(informacionUsuarios[i]));
+                }
             }
 
-            if (ids.Count > 0){
+            if (ids.Count > 0)
+            {
                 nuevoId = ids.Max() + 1;
             }
         }
@@ -45,6 +50,15 @@ public class Permiso
         return File.Exists(RutaArchivo);
     }
 
+    public Permiso()
+    {
+        PermisoId = GenerarNuevoId();
+        FechaInicio = DateTime.Now;
+        FechaFin = DateTime.Now;
+        Casa = new Casa();
+        Usuario = new Usuario();
+    }
+
     public Permiso(DateTime FechaInicio, DateTime FechaFin, Casa Casa, Usuario Usuario)
     {
         this.PermisoId = GenerarNuevoId();
@@ -53,11 +67,7 @@ public class Permiso
         this.Casa = Casa;
         this.Usuario = Usuario;
     }
-
-    /// <summary>
-    /// Adds a new permission to the file.
-    /// </summary>
-    /// <param name="permiso">The permission object to be added.</param>
+    
     public void AgregarPermiso(Permiso permiso)
     {
         // Obtener casa Id y Usuario Id

@@ -41,8 +41,6 @@ public class FileManipulation
                 // Escribe el contenido en una nueva línea.
                 sw.WriteLine(contenido);
             }
-
-            Console.WriteLine("Línea agregada exitosamente al archivo.");
         }
         catch (Exception ex)
         {
