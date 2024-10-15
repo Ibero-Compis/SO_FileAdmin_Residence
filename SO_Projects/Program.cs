@@ -8,6 +8,98 @@ namespace Lab4_FileManagement
         {
             AdminMenu();
         }
+        
+        static void IniciarSesion()
+        {
+            Console.Clear();
+            Console.Write("Ingrese Email: ");
+            string email = Console.ReadLine();
+            Console.Write("Ingrese Contraseña: ");
+            string password = Console.ReadLine();
+
+            Usuario? user = Usuario.IniciarSesion(email, password);
+            if (user != null)
+            {
+                switch (user.Rol.RoleName)
+                {
+                    case "Admin":
+                        AdminMenu();
+                        break;
+                    case "Vigilante":
+                        VigilantMenu();
+                        break;
+                    default:
+                        Console.WriteLine("Rol no válido. Presione cualquier tecla para intentar de nuevo...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Email o contraseña incorrectos. Presione cualquier tecla para intentar de nuevo...");
+                Console.ReadKey();
+            }
+        }
+        
+        static void PrincipalMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("===== Menú Principal =====");
+                Console.WriteLine("1. Iniciar Sesión");
+                Console.WriteLine("2. Salir");
+                Console.WriteLine("==================================");
+                Console.Write("Seleccione una opción: ");
+                string mainChoice = Console.ReadLine();
+
+                switch (mainChoice)
+                {
+                    case "1":
+                        IniciarSesion();
+                        break;
+                    case "2":
+                        Console.WriteLine("Gracias por usar el sistema. Hasta luego.");
+                        return;
+                    default:
+                        Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+        
+        static void VigilantMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("===== Menú de Vigilante =====");
+                Console.WriteLine("1. Mostrar Permisos");
+                Console.WriteLine("2. Registrar Entrada");
+                Console.WriteLine("3. Volver al Menú Principal");
+                Console.WriteLine("==================================");
+                Console.Write("Seleccione una opción: ");
+                string vigilanteChoice = Console.ReadLine();
+
+                switch (vigilanteChoice)
+                {
+                    case "1":
+                        MostrarPermisos();
+                        break;
+                    case "2":
+                        // TODO IMPLEMENTAR REGISTRO DE ENTRADA 
+                        return;
+                    case "3":
+                        PrincipalMenu();
+                        return;
+                    default:
+                        Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
 
         static void AdminMenu()
         {
@@ -47,6 +139,7 @@ namespace Lab4_FileManagement
                         GestionCasasMenu();
                         break;
                     case "7":
+                        PrincipalMenu();
                         return;
                     default:
                         Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
@@ -82,6 +175,7 @@ namespace Lab4_FileManagement
                         EliminarPermiso();
                         break;
                     case "4":
+                        
                         return;
                     default:
                         Console.WriteLine("Opción inválida. Presione cualquier tecla para intentar de nuevo...");
