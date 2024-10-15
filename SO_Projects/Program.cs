@@ -214,7 +214,8 @@ namespace Lab4_FileManagement
                 Console.WriteLine("4. Mostrar todos los usuarios");
                 Console.WriteLine("5. Gestión de Permisos");
                 Console.WriteLine("6. Gestión de Casas");
-                Console.WriteLine("7. Volver al Menú Principal");
+                Console.WriteLine("7. Mostrar entradas");
+                Console.WriteLine("8. Volver al Menú Principal");
                 Console.WriteLine("==================================");
                 Console.Write("Seleccione una opción: ");
                 string adminChoice = Console.ReadLine();
@@ -240,6 +241,9 @@ namespace Lab4_FileManagement
                         GestionCasasMenu();
                         break;
                     case "7":
+                        GestionarEntradas();
+                        break;
+                    case "8":
                         PrincipalMenu();
                         return;
                     default:
@@ -248,6 +252,26 @@ namespace Lab4_FileManagement
                         break;
                 }
             }
+        }
+
+        static void GestionarEntradas()
+        {
+            Entrada entradaManager = new Entrada("", DateTime.Now, "", 0);
+            List<Entrada> entradas = entradaManager.ObtenerTodasLasEntradas();
+            
+            // mostrar cada entrada
+            foreach (Entrada entrada in entradas)
+            {
+                Console.WriteLine($"ID de Entrada: {entrada.id}");
+                Console.WriteLine($"Comentario: {entrada.comentario}");
+                Console.WriteLine($"Fecha: {entrada.fecha}");
+                Console.WriteLine($"Terminal: {entrada.terminal}");
+                Console.WriteLine($"Permiso ID: {entrada.permisoId}");
+                Console.WriteLine();
+            }
+            
+            Console.WriteLine("Presione cualquier tecla para volver...");
+            Console.ReadKey();
         }
 
         static void GestionPermisosMenu()

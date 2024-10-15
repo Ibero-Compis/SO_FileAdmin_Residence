@@ -136,10 +136,10 @@ public class Entrada
                 
                 if (line == id.ToString())
                 {
-                    int permisoId = int.Parse(sr.ReadLine()); // TODO: agregar permiso
                     string comentario = sr.ReadLine();
                     DateTime fecha = DateTime.Parse(sr.ReadLine());
                     string terminal = sr.ReadLine();
+                    int permisoId = int.Parse(sr.ReadLine());
                     
                     return new Entrada(comentario, fecha, terminal, permisoId);
                 }
@@ -168,10 +168,12 @@ public class Entrada
             while ((line = sr.ReadLine()) != null) // primero lee el id
             {
                 int id = int.Parse(line);
-                int permisoId = int.Parse(sr.ReadLine()); // TODO: agregar permiso
                 string comentario = sr.ReadLine();
                 DateTime fecha = DateTime.Parse(sr.ReadLine());
                 string terminal = sr.ReadLine();
+                int permisoId = int.Parse(sr.ReadLine());
+                
+                string emptyLine = sr.ReadLine(); // linea vacia
                 
                 entradas.Add(new Entrada(comentario, fecha, terminal, permisoId));
             }
